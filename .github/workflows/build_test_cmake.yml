@@ -17,11 +17,25 @@ jobs:
             name: "Build with Intel toolchain"
 
           - tag: gnu
-            build_args: "-DENABLE_LIBXC=1 -DDENABLE_MLALGO=1 -DENABLE_LIBRI=1 -DENABLE_PEXSI=1"
-            name: "Build extra components with GNU toolchain"
+            build_args: "-DENABLE_LIBXC=1 -DENABLE_LIBRI=1 -DENABLE_PEXSI=1"
+            name: "Build extra components with GNU toolchain (std)"
           - tag: intel
-            build_args: "-DENABLE_LIBXC=1 -DENABLE_MLALGO=1 -DENABLE_LIBRI=1 -DENABLE_PEXSI=1"
-            name: "Build extra components with Intel toolchain"
+            build_args: "-DENABLE_LIBXC=1 -DENABLE_LIBRI=1 -DENABLE_PEXSI=1"
+            name: "Build extra components with Intel toolchain (std)"
+
+          - tag: gnu
+            build_args: "-DENABLE_MLALGO=1 -DENABLE_NEP=1"
+            name: "Build extra components with GNU toolchain (ml)"
+          - tag: intel
+            build_args: "-DENABLE_MLALGO=1 -DENABLE_NEP=1"
+            name: "Build extra components with Intel toolchain (ml)"
+
+          - tag: gnu
+            build_args: "-DENABLE_LIBXC=1 -DENABLE_LIBRI=1 -DENABLE_PEXSI=1 -DENABLE_MLALGO=1 -DENABLE_NEP=1"
+            name: "Build extra components with GNU toolchain (max)"
+          - tag: intel
+            build_args: "-DENABLE_LIBXC=1 -DENABLE_LIBRI=1 -DENABLE_PEXSI=1 -DENABLE_MLALGO=1 -DENABLE_NEP=1"
+            name: "Build extra components with Intel toolchain (max)"
 
           - tag: cuda
             build_args: "-DUSE_CUDA=1"
