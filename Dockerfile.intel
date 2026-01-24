@@ -148,26 +148,34 @@ RUN wget https://codeload.github.com/xiaoyeli/superlu_dist/tar.gz/refs/tags/v${S
 ###     -DCMAKE_CUDA_COMPILER=nvcc \
 
 # 5. install PEXSI
-RUN export LD_LIBRARY_PATH=${SUPERLU_DIST32_ROOT}/lib:${METIS32_ROOT}/lib:${PARMETIS32_ROOT}/lib:${GKLIB_ROOT}/lib:${LD_LIBRARY_PATH} && \
-    export LIBRARY_PATH=${SUPERLU_DIST32_ROOT}/lib:${METIS32_ROOT}/lib:${PARMETIS32_ROOT}/lib:${GKLIB_ROOT}/lib:${LIBRARY_PATH} && \
-    export PKG_CONFIG_PATH=${SUPERLU_DIST32_ROOT}/lib/pkgconfig:${METIS32_ROOT}/lib/pkgconfig:${PARMETIS32_ROOT}/lib/pkgconfig:${GKLIB_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH} && \
-    export CPATH=${SUPERLU_DIST32_ROOT}/include:${PARMETIS32_ROOT}/include:${METIS32_ROOT}/include:${GKLIB_ROOT}/include:${CMAKE_PREFIX_PATH} && \
-    export CMAKE_PREFIX_PATH=${SUPERLU_DIST32_ROOT}:${PARMETIS32_ROOT}:${METIS32_ROOT}:${GKLIB_ROOT}:${CMAKE_PREFIX_PATH} && \
-    wget https://bitbucket.org/berkeleylab/pexsi/downloads/pexsi_v${PEXSI_VERSION}.tar.gz && \
-    tar -xzf pexsi_v${PEXSI_VERSION}.tar.gz && \
-    cd pexsi_v${PEXSI_VERSION} && \
+ENV LD_LIBRARY_PATH=${SUPERLU_DIST32_ROOT}/lib:${METIS32_ROOT}/lib:${PARMETIS32_ROOT}/lib:${GKLIB_ROOT}/lib:${LD_LIBRARY_PATH} 
+ENV LIBRARY_PATH=${SUPERLU_DIST32_ROOT}/lib:${METIS32_ROOT}/lib:${PARMETIS32_ROOT}/lib:${GKLIB_ROOT}/lib:${LIBRARY_PATH}
+ENV PKG_CONFIG_PATH=${SUPERLU_DIST32_ROOT}/lib/pkgconfig:${METIS32_ROOT}/lib/pkgconfig:${PARMETIS32_ROOT}/lib/pkgconfig:${GKLIB_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
+ENV CPATH=${SUPERLU_DIST32_ROOT}/include:${PARMETIS32_ROOT}/include:${METIS32_ROOT}/include:${GKLIB_ROOT}/include:${CMAKE_PREFIX_PATH}
+ENV CMAKE_PREFIX_PATH=${SUPERLU_DIST32_ROOT}:${PARMETIS32_ROOT}:${METIS32_ROOT}:${GKLIB_ROOT}:${CMAKE_PREFIX_PATH}
+RUN wget https://bitbucket.org/berkeleylab/pexsi/downloads/pexsi_v${PEXSI_VERSION}.tar.gz
+RUN tar -xzf pexsi_v${PEXSI_VERSION}.tar.gz
+RUN cd pexsi_v${PEXSI_VERSION} && \
     sed -i 's/^add_pexsi_f_example_exe/# add_pexsi_f_example_exe/g' fortran/CMakeLists.txt && \
     sed -i 's/^add_pexsi_example_exe/# add_pexsi_example_exe/g' examples/CMakeLists.txt && \
     sed -i 's/add_executable/# add_executable/g' fortran/CMakeLists.txt && \
     sed -i 's/add_executable/# add_executable/g' examples/CMakeLists.txt && \
-    mkdir build && cd build && \
+    mkdir build
+RUN cd pexsi_v${PEXSI_VERSION}/build && \
     cmake .. \
         -DCMAKE_INSTALL_PREFIX=${PEXSI32_ROOT} \
         -DPEXSI_ENABLE_OPENMP=ON \
-        -DPEXSI_ENABLE_FORTRAN=OFF && \
-    make pexsi -j$(nproc) && \
+        -DPEXSI_ENABLE_FORTRAN=OFF
+RUN cd pexsi_v${PEXSI_VERSION}/build && \
+    make pexsi -j$(nproc)
+RUN cd pexsi_v${PEXSI_VERSION}/build && \
     make install && \
     cd / && rm -rf pexsi_v${PEXSI_VERSION} pexsi_v${PEXSI_VERSION}.tar.gz
+
+ENV LD_LIBRARY_PATH=${GKLIB_ROOT}/lib:${METIS32_ROOT}/lib:${PARMETIS32_ROOT}/lib:${SUPERLU32_DIST_ROOT}/lib:${PEXSI32_ROOT}/lib:${LD_LIBRARY_PATH}
+ENV PKG_CONFIG_PATH=${GKLIB_ROOT}/lib/pkgconfig:${METIS32_ROOT}/lib/pkgconfig:${PARMETIS32_ROOT}/lib/pkgconfig:${SUPERLU32_DIST_ROOT}/lib/pkgconfig:${PEXSI32_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH}
+ENV CPATH=${GKLIB_ROOT}/include:${METIS32_ROOT}/include:${PARMETIS32_ROOT}/include:${SUPERLU32_DIST_ROOT}/include:${PEXSI32_ROOT}/include:${CPATH}
+ENV CMAKE_PREFIX_PATH=${PEXSI32_ROOT}:${SUPERLU_DIST32_ROOT}:${PARMETIS32_ROOT}:${METIS32_ROOT}:${GKLIB_ROOT}:${CMAKE_PREFIX_PATH}
 
 ###         -DCMAKE_C_COMPILER=mpiicc \
 ###        -DCMAKE_CXX_COMPILER=mpiicpc \
@@ -175,11 +183,7 @@ RUN export LD_LIBRARY_PATH=${SUPERLU_DIST32_ROOT}/lib:${METIS32_ROOT}/lib:${PARM
 
 # Clone and build abacus (optional during image build; keep for CI image)
 ADD https://api.github.com/repos/deepmodeling/abacus-develop/git/refs/heads/develop /dev/null
-RUN export LD_LIBRARY_PATH=${GKLIB_ROOT}/lib:${METIS32_ROOT}/lib:${PARMETIS32_ROOT}/lib:${SUPERLU32_DIST_ROOT}/lib:${PEXSI32_ROOT}/lib:${LD_LIBRARY_PATH} && \
-    export PKG_CONFIG_PATH=${GKLIB_ROOT}/lib/pkgconfig:${METIS32_ROOT}/lib/pkgconfig:${PARMETIS32_ROOT}/lib/pkgconfig:${SUPERLU32_DIST_ROOT}/lib/pkgconfig:${PEXSI32_ROOT}/lib/pkgconfig:${PKG_CONFIG_PATH} && \
-    export CPATH=${GKLIB_ROOT}/include:${METIS32_ROOT}/include:${PARMETIS32_ROOT}/include:${SUPERLU32_DIST_ROOT}/include:${PEXSI32_ROOT}/include:${CPATH} && \
-    export CMAKE_PREFIX_PATH=${PEXSI32_ROOT}:${SUPERLU_DIST32_ROOT}:${PARMETIS32_ROOT}:${METIS32_ROOT}:${GKLIB_ROOT}:${CMAKE_PREFIX_PATH} && \
-    cd /tmp && git clone https://github.com/deepmodeling/abacus-develop.git --depth 1 && \
+RUN cd /tmp && git clone https://github.com/deepmodeling/abacus-develop.git --depth 1 && \
     cd abacus-develop && \
     cmake -B build \
         -DENABLE_MLALGO=ON \
